@@ -8,7 +8,7 @@ module.exports = {
     min1(
       $.attributes,
       repeat1(
-        choice('noncomputable', 'partial', $._visibility, 'unsafe'),
+        choice('noncomputable', 'partial', $._visibility, 'unsafe', 'nonrec'),
       ),
     ),
   ),
@@ -27,7 +27,7 @@ module.exports = {
     ),
     $._type_spec,
   )),
-  _decl_val_simple: $ => seq(':=', $._expression),
+  _decl_val_simple: $ => seq(':=', $._expression, optional($._where_decls)),
   _decl_val_equations: $ => $._match_alts_where_decls,
   _decl_val: $ => field('body', choice(
     $._decl_val_simple,
@@ -47,7 +47,7 @@ module.exports = {
     $._decl_val,
   ),
   theorem: $ => seq(
-    'theorem',
+    choice('theorem', 'lemma'),
     $._decl_id,
     $._decl_sig,
     $._decl_val,
@@ -154,7 +154,14 @@ module.exports = {
       $.inductive,
       $.class_inductive,
       $.structure,
+      $.opaque_decl,
     ),
+  ),
+  opaque_decl: $ => seq(
+    'opaque',
+    $._decl_id,
+    $._decl_sig,
+    optional($._decl_val_simple),
   ),
   section: $ => seq(
     'section',
@@ -162,6 +169,11 @@ module.exports = {
     field('body', repeat($._command)),
     'end',
     optional($.identifier),
+  ),
+  mutual: $ => seq(
+    'mutual',
+    field('body', repeat($._command)),
+    'end',
   ),
   namespace: $ => seq(
     'namespace',
@@ -175,6 +187,11 @@ module.exports = {
   hash_command: $ => seq(
     choice('#check', '#check_failure', '#eval', '#print', '#reduce'),
     $._expression,
+  ),
+
+  termination_by: $ => seq(
+    'termination_by',
+    field('value', token(/[^\n]+/)),
   ),
 
   attribute: $ => seq(
@@ -213,7 +230,9 @@ module.exports = {
 
   _command: $ => choice(
     $.declaration,
+    $.termination_by,
     $.section,
+    $.mutual,
     $.namespace,
     $.variable,
     $.universe,
@@ -230,5 +249,8 @@ module.exports = {
     $.syntax,
     $.macro,
     $.elab,
+    $.set_option,
   ),
+
+  set_option: $ => seq('set_option', $.identifier, choice($.number, $.identifier, $.string, $.true, $.false)),
 }

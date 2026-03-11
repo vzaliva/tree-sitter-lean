@@ -1,1 +1,8 @@
 /foo.lean
+.parse-dir-results
+.claude
+.cursor
+lean.so
+parser.so
+corpus
+

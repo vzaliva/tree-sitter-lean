@@ -7,7 +7,10 @@ end Foo
 
 ---
 
-(module (namespace (identifier) (identifier)))
+(module
+  (namespace
+    (identifier)
+    (identifier)))
 
 =============
 Empty Section
@@ -18,7 +21,10 @@ end Foo
 
 ---
 
-(module (section (identifier) (identifier)))
+(module
+  (section
+    (identifier)
+    (identifier)))
 
 ======================
 Nested Empty Namespace
@@ -32,8 +38,12 @@ end Foo
 ---
 
 (module
-  (namespace (identifier)
-    (namespace (identifier) (identifier)) (identifier)))
+  (namespace
+    (identifier)
+    (namespace
+      (identifier)
+      (identifier))
+    (identifier)))
 
 ====================
 Nested Empty Section
@@ -47,8 +57,12 @@ end Foo
 ---
 
 (module
-  (section (identifier)
-    (section (identifier) (identifier)) (identifier)))
+  (section
+    (identifier)
+    (section
+      (identifier)
+      (identifier))
+    (identifier)))
 
 ===========================
 Namespace With Declarations
@@ -64,9 +78,19 @@ end Foo
 ---
 
 (module
-  (namespace (identifier)
-    (declaration (theorem (identifier) (identifier) (sorry)))
-    (declaration (theorem (identifier) (identifier) (sorry))) (identifier)))
+  (namespace
+    (identifier)
+    (declaration
+      (theorem
+        (identifier)
+        (identifier)
+        (sorry)))
+    (declaration
+      (theorem
+        (identifier)
+        (identifier)
+        (sorry)))
+    (identifier)))
 
 =========================
 Section With Declarations
@@ -82,9 +106,18 @@ end Foo
 ---
 
 (module
-  (section (identifier)
-    (declaration (theorem (identifier) (identifier) (sorry)))
-    (declaration (theorem (identifier) (identifier) (sorry)))
+  (section
+    (identifier)
+    (declaration
+      (theorem
+        (identifier)
+        (identifier)
+        (sorry)))
+    (declaration
+      (theorem
+        (identifier)
+        (identifier)
+        (sorry)))
     (identifier)))
 
 =======================
@@ -110,12 +143,23 @@ end Foo
 ---
 
 (module
-  (namespace (identifier)
-    (section (identifier)
-      (declaration (theorem (identifier) (identifier) (sorry)))
+  (namespace
+    (identifier)
+    (section
+      (identifier)
+      (declaration
+        (theorem
+          (identifier)
+          (identifier)
+          (sorry)))
       (identifier))
-    (section (identifier)
-      (declaration (theorem (identifier) (identifier) (sorry)))
+    (section
+      (identifier)
+      (declaration
+        (theorem
+          (identifier)
+          (identifier)
+          (sorry)))
       (identifier))
     (identifier)))
 
@@ -128,7 +172,8 @@ end
 
 ---
 
-(module (section))
+(module
+  (section))
 
 =======================
 No Anonymous Namespaces
@@ -139,7 +184,9 @@ end
 
 ---
 
-(module (ERROR (identifier)))
+(module
+  (ERROR
+    (identifier)))
 
 =====================
 Dotted Name Namespace
@@ -150,7 +197,10 @@ end Foo.Bar.Baz
 
 ---
 
-(module (namespace (identifier) (identifier)))
+(module
+  (namespace
+    (identifier)
+    (identifier)))
 
 ===================
 Dotted Name Section
@@ -161,7 +211,10 @@ end Foo.Bar.Baz
 
 ---
 
-(module (section (identifier) (identifier)))
+(module
+  (section
+    (identifier)
+    (identifier)))
 
 =========
 Variables
@@ -183,13 +236,19 @@ variable {x : α} [y : α]
   (variable
     (explicit_binder
       name: (identifier)
-      type: (arrow (identifier) (identifier)))
+      type: (arrow
+        (identifier)
+        (identifier)))
     (explicit_binder
       name: (identifier)
-      type: (arrow (identifier) (identifier)))
+      type: (arrow
+        (identifier)
+        (identifier)))
     (explicit_binder
       name: (identifier)
-      type: (arrow (identifier) (identifier))))
+      type: (arrow
+        (identifier)
+        (identifier))))
   (variable
     (implicit_binder
       name: (identifier)
@@ -208,7 +267,10 @@ variable
 
 ---
 
-(module (ERROR) (hash_command (number)))
+(module
+  (ERROR)
+  (hash_command
+    (number)))
 
 =================================
 Non-Implicit-or-Explicit Variable
@@ -220,4 +282,7 @@ variable y
 
 ---
 
-(module (ERROR) (hash_command (number)))
+(module
+  (ERROR)
+  (hash_command
+    (number)))

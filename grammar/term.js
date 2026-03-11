@@ -1,16 +1,19 @@
 const {PREC} = require('./basic.js')
-const {Parser, min1} = require('./util.js')
+const {Parser, min1, sep1} = require('./util.js')
 
 const match_alt = ($, rhs_parser) => seq(
   '|',
-  field('lhs', sep1($._expression, ',')),
+  field('lhs', sep1($._expression_no_fun, ',')),
+  repeat(seq('|', field('lhs', sep1($._expression_no_fun, ',')))),
   '=>',
   (typeof rhs_parser !== 'undefined') ? rhs_parser : $._expression,
 )
 const match_alts = ($, rhs_parser) => repeat1(match_alt($, rhs_parser))
 
 const term = new Parser($ => [
+  $.dot_identifier,
   $.identifier,
+  $.empty_set,
   $.number,
   $.float,
   $.string,
@@ -66,6 +69,8 @@ module.exports = {
     synthetic_hole: $ => seq("?", choice($.identifier, $.hole)),
     sorry: $ => 'sorry',
     cdot: $ => choice('.', '·'),
+    // .guardClosure, .namedVar - dot-prefixed constructor/identifier
+    dot_identifier: $ => seq('.', $._identifier),
     type_ascription: $ => seq(':', field('type', $._expression)),
     tuple_tail: $ => seq(',', sep1($._expression, ',')),
     parenthesized: $ => seq(
@@ -85,7 +90,11 @@ module.exports = {
       '{',
       optional(field('extends', seq($._expression, 'with'))),
       // Unlike everywhere else, records seem OK with trailing commas.
-      optional(sep1_($._structure_instance_field, ',')),
+      // Fields can be separated by commas, or by newlines in indented blocks.
+      optional(choice(
+        seq($._indent, sep1($._structure_instance_field, choice(',', $._newline)), optional(','), $._dedent),
+        sep1_($._structure_instance_field, ','),
+      )),
       field('type', optional($._type_spec)),
       '}',
     ),
@@ -94,9 +103,13 @@ module.exports = {
     explicit: $ => seq('@', prec(PREC.max, $._term)),
     _binder_ident: $ => choice($.identifier, $.hole),
     _binder_default: $ => field('default', seq(':=', $._expression)),
+    // (x y : Nat) = repeat1; (k, v) = comma-separated. Space is in extras so repeat1 handles (x y).
     explicit_binder: $ => seq(
       '(',
-      field('name', repeat1($._binder_ident)),
+      field('name', choice(
+        seq($._binder_ident, repeat1(seq(',', $._binder_ident))),
+        repeat1($._binder_ident),
+      )),
       field('type', optional($._type_spec)),
       optional(choice($._binder_default)),
       ')',
@@ -149,6 +162,8 @@ module.exports = {
 
     true: $ => 'true',
     false: $ => 'false',
+    // Empty set notation (∅)
+    empty_set: $ => '∅',
 
     match: $ => prec.left(seq(
       'match',
@@ -170,7 +185,7 @@ module.exports = {
       ),
       field('type', optional($._type_spec)),
     ),
-    _let_id_decl: $ => seq($._let_id_lhs, ":=", field('body', $._expression)),
+    _let_id_decl: $ => prec.dynamic(1, seq($._let_id_lhs, ":=", field('body', $._expression))),
     _let_pattern_decl: $ => seq($._term, optional($._type_spec), ":=", $._expression),
     _let_equations_decl: $ => seq($._let_id_lhs, field('body', $._match_alts)),
     _let_decl: $ => choice(
@@ -201,8 +216,9 @@ module.exports = {
     attributes: $ => seq('@[', sep1($._attr_instance, ','), ']'),
     _let_rec_decl: $ => seq($._let_decl),
 
-    _where_decls: $ => seq(
-      'where', repeat1(seq(alias($._let_rec_decl, $.where_decl))),
+    _where_decls: $ => choice(
+      seq('where', $._indent, sep1(alias($._let_rec_decl, $.where_decl), $._newline), $._dedent),
+      seq('where', alias($._let_rec_decl, $.where_decl)),
     ),
     _match_alts_where_decls: $ => seq($._match_alts, optional($._where_decls)),
 
@@ -256,6 +272,8 @@ module.exports = {
       $._expression,
     ),
 
+    dbg_trace: $ => prec.right(seq('dbg_trace', $._expression, ';', $._expression)),
+
     _notation_term: $ => choice(
       $.product,
       $.unary_expression,
@@ -263,6 +281,7 @@ module.exports = {
       $.if_then_else,
       $.list,
       $.assumption_literal,
+      $.dbg_trace,
     ),
 
     // src/Init/NotationExtra.lean

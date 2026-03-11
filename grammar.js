@@ -36,6 +36,8 @@ module.exports = grammar({
 
   externals: $ => [
     $._newline,
+    $._indent,
+    $._dedent,
   ],
 
   conflicts: $ => [
@@ -55,6 +57,13 @@ module.exports = grammar({
     [$.instance_binder, $._term],
     [$.instance_binder, $.list],
     [$.proj, $._expression],
+    [$.cdot, $.dot_identifier],
+    [$.do_match],
+    [$._expression, $._do_element],
+    [$.do_let, $.let],
+    [$.do_let, $.let_rec],
+    [$.do_let, $.let_mut],
+    [$.do_let, $.parameters],
   ],
 
   word: $ => $._identifier,
@@ -83,6 +92,7 @@ module.exports = grammar({
     _expression: $ => choice(
       $.apply,
       $.comparison,
+      $.let_rec,
       $.let,
       $.tactics,
       $.binary_expression,
@@ -93,7 +103,35 @@ module.exports = grammar({
 
       $.do,
       $.unless,
+      $.do_return,
     ),
+
+    // Match pattern lhs: expression without fun/lambda (prevents "v1 =>" being parsed as lambda)
+    _expression_no_fun: $ => choice(
+      $.apply,
+      $.comparison,
+      $.let_rec,
+      $.let,
+      $.tactics,
+      $.binary_expression,
+      $.neg,
+      $.quoted_tactic,
+      $._term,
+      $.do,
+      $.unless,
+    ),
+
+    // let rec with equations: let rec f : Type | pat => body | pat => body
+    let_rec: $ => prec.left(1, seq(
+      'let',
+      'rec',
+      field('name', $.identifier),
+      optional(field('parameters', $.parameters)),
+      optional(seq(':', field('type', $._expression))),
+      optional(choice($._newline, ';')),
+      field('value', $._match_alts),
+      optional(field('body', $._expression)),
+    )),
 
     let: $ => prec.left(seq(
       'let',
@@ -106,15 +144,11 @@ module.exports = grammar({
       optional(field('body', $._expression)),
     )),
 
-    _do_seq: $ => prec.right(sep1_($._do_element, $._newline)),
-    do: $ => prec.right(seq('do', $._do_seq)),
-
-    conditional_when: $ => prec.right(seq(
-      'if',
-      $._expression,
-      'then',
+    _do_seq: $ => choice(
+      seq($._indent, sep1($._do_element, $._newline), $._dedent),
       $._do_element,
-    )),
+    ),
+    do: $ => prec.right(seq('do', $._do_seq)),
 
     for_in: $ => seq(
       'for',
@@ -130,26 +164,25 @@ module.exports = grammar({
       field('value', $._expression),
     ),
 
-    let_mut: $ => seq(
+    let_mut: $ => prec(100, seq(
       'let', 'mut',
       $.parameters,
       choice($._left_arrow, ':='),
       field('value', $._expression),
-    ),
+    )),
 
     let_bind: $ => seq(
       'let',
-      field('name', $.identifier),
+      field('name', choice($.identifier, $.anonymous_constructor, $.parenthesized)),
       $._left_arrow,
       field('value', $._expression),
     ),
 
     unless: $ => seq('unless', $._expression, $.do),
 
-    // FIXME: nesting (which depends on the indent processing)
     try: $ => prec.left(1, seq(
       'try',
-      sep1_($._do_element, $._newline),
+      $._do_seq,
       choice(
         seq($.catch, optional($.finally)),
         $.finally,
@@ -159,12 +192,12 @@ module.exports = grammar({
       'catch',
       $._expression,
       '=>',
-      sep1_($._do_element, $._newline),
+      $._do_seq,
     )),
 
     finally: $ => prec.left(seq(
       'finally',
-      sep1_($._do_element, $._newline),
+      $._do_seq,
     )),
 
     fun: $ => prec.right(seq(
@@ -175,7 +208,7 @@ module.exports = grammar({
           '=>',
           $._expression,
         ),
-        repeat(seq(
+        repeat1(seq(
           '|',
           field('lhs', sep1($._expression, ',')),
           '=>',
@@ -237,6 +270,9 @@ module.exports = grammar({
 
       prec.left(PREC.equal, seq($._expression, '=', $._expression)),
       prec.left(PREC.equal, seq($._expression, '≠', $._expression)),
+      prec.left(PREC.equal, seq($._expression, '!=', $._expression)),
+      prec.left(PREC.equal, seq($._expression, '!=', $._expression)),
+
     ),
 
     comparison: $ => prec.left(PREC.compare, seq(
@@ -248,20 +284,20 @@ module.exports = grammar({
         '≥',
         '<=',
         '>=',
+        '!=',
+        '∈',
+        '∉',
+        '⊆',
+        '⊂',
+        '∩',
+        '∪',
       ),
       $._expression,
     )),
 
     comment: $ => token(choice(
       seq('--', /.*/),
-      seq(
-        '/-',
-        repeat(choice(
-          /[^-]/,
-          /-[^/]/
-        )),
-        '-/',
-      ),
+      /\/-([^-]|-+[^-/])*-+\//,
     )),
 
     _identifier: $ => /[_a-zA-ZͰ-ϿĀ-ſ\U0001D400-\U0001D7FF][_`'`a-zA-Z0-9Ͱ-ϿĀ-ſ∇!?\u2070-\u209F\U0001D400-\U0001D7FF]*/,

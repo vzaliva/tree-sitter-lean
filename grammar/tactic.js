@@ -7,7 +7,8 @@ module.exports = {
   rewrite: $ => seq(choice('rewrite', 'rw'), $._expression),
   term: $ => seq('exact', $._expression),
   simp: $ => prec.right(seq(
-    'simp',
+    choice('simp', 'simp_all'),
+    optional('only'),
     optional(field('extra', $.list)),
   )),
   trivial: $ => 'trivial',
@@ -15,6 +16,13 @@ module.exports = {
   // src/Init/Tactics.lean
   intro: $ => prec.left(seq('intro', repeat($._expression))),
   rfl: $ => 'rfl',
+
+  split_ifs: $ => 'split_ifs',
+  omega: $ => 'omega',
+  decide: $ => 'decide',
+  assumption: $ => 'assumption',
+  contradiction: $ => 'contradiction',
+  constructor_tactic: $ => 'constructor',
 
   _user_tactic: $ => $._expression,
 
@@ -27,6 +35,12 @@ module.exports = {
 
     $.intro,
     $.rfl,
+    $.split_ifs,
+    $.omega,
+    $.decide,
+    $.assumption,
+    $.contradiction,
+    $.constructor_tactic,
 
     $._user_tactic,
   ),

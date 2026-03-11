@@ -70,6 +70,14 @@ module.exports = {
       seq('return', field('value', $._expression)),
     ),
   ),
+  // match <- expr with | pat => body (do-notation)
+  do_match: $ => prec.left(PREC.lead, seq(
+    'match',
+    $._left_arrow,
+    field('value', $._expression),
+    'with',
+    field('patterns', $._match_alts),
+  )),
   _do_expression: $ => $._expression,
 
   do: $ => prec(PREC.lead, seq('do', $._do_seq)),
@@ -81,6 +89,13 @@ module.exports = {
     alias($._do_seq, $.do),
   ),
 
+  do_match: $ => seq(
+    'match',
+    $._left_arrow,
+    field('value', $._expression),
+    'with',
+    field('patterns', $._match_alts),
+  ),
   _do_element: $ => choice(
     $.do_let,
     $.do_let_arrow,
@@ -88,6 +103,7 @@ module.exports = {
     $.do_unless,
     $.do_for,
     $.do_return,
+    $.do_match,
     $._do_expression,
   ),
 
@@ -96,8 +112,25 @@ module.exports = {
     do_return: $ => prec.left(PREC.lead,
       seq('return', optional(field('value', $._expression))),
     ),
+    do_match: $ => prec.left(seq(
+      'match',
+      $._left_arrow,
+      field('value', $._expression),
+      'with',
+      field('patterns', $._match_alts),
+    )),
+    do_let: $ => seq(
+      'let',
+      field('name', choice($.identifier, $.hole, $.parenthesized, $.anonymous_constructor)),
+      optional(field('parameters', $.parameters)),
+      optional(seq(':', field('type', $._expression))),
+      ':=',
+      field('value', $._expression),
+    ),
     _do_expression: $ => $._expression,
     _do_element: $ => choice(
+      $.do_match,
+      $.do_let,
       $._do_expression,
       $.assign,
       $.for_in,

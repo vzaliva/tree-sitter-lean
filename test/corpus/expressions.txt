@@ -6,7 +6,9 @@ Number
 
 ---
 
-(module (hash_command (number)))
+(module
+  (hash_command
+    (number)))
 
 =====
 Float
@@ -17,7 +19,11 @@ Float
 
 ---
 
-(module (hash_command (float)) (hash_command (float)))
+(module
+  (hash_command
+    (float))
+  (hash_command
+    (float)))
 
 =====
 Range
@@ -31,10 +37,9 @@ Range
   (hash_command
     (range
       start: (number)
-      stop:
-        (apply
-          name: (identifier)
-          arguments: (number))
+      stop: (apply
+        name: (identifier)
+        arguments: (number))
       step: (number))))
 
 =============
@@ -74,8 +79,13 @@ List
 ---
 
 (module
-  (hash_command (list (number) (number) (number)))
-  (hash_command (list)))
+  (hash_command
+    (list
+      (number)
+      (number)
+      (number)))
+  (hash_command
+    (list)))
 
 =========
 Array Ref
@@ -89,10 +99,9 @@ Array Ref
   (hash_command
     (subarray
       term: (identifier)
-      value:
-        (apply
-          name: (identifier)
-          arguments: (number)))))
+      value: (apply
+        name: (identifier)
+        arguments: (number)))))
 
 ========
 Subarray
@@ -107,10 +116,9 @@ Subarray
     (subarray
       term: (identifier)
       start: (number)
-      stop:
-        (apply
-          name: (identifier)
-          arguments: (number)))))
+      stop: (apply
+        name: (identifier)
+        arguments: (number)))))
 
 ================
 Subarray No Stop
@@ -151,11 +159,10 @@ Subarray of Expression
 (module
   (hash_command
     (subarray
-      term:
-        (parenthesized
-          (apply
-            name: (identifier)
-            arguments: (number)))
+      term: (parenthesized
+        (apply
+          name: (identifier)
+          arguments: (number)))
       stop: (number))))
 
 ===========================
@@ -169,7 +176,11 @@ Subarray Does Not Have Step
 (module
   (hash_command
     (subarray
-      (identifier) (number) (ERROR (number)) (number))))
+      (identifier)
+      (number)
+      (ERROR
+        (number))
+      (number))))
 
 ===========================
 Subarray Does Not Have Copy
@@ -181,7 +192,10 @@ Subarray Does Not Have Copy
 
 (module
   (hash_command
-    (subarray (identifier) (identifier (MISSING _identifier)))))
+    (subarray
+      (identifier)
+      (identifier
+        (MISSING _identifier)))))
 
 ==================
 Subarray vs. Range
@@ -195,10 +209,9 @@ Subarray vs. Range
   (hash_command
     (apply
       name: (identifier)
-      arguments:
-        (range
-          start: (number)
-          stop: (number)))))
+      arguments: (range
+        start: (number)
+        stop: (number)))))
 
 =====
 Array
@@ -210,8 +223,13 @@ Array
 ---
 
 (module
-  (hash_command (array (number) (number) (number)))
-  (hash_command (array)))
+  (hash_command
+    (array
+      (number)
+      (number)
+      (number)))
+  (hash_command
+    (array)))
 
 =====================
 Inductive Constructor
@@ -224,9 +242,22 @@ example : Foo := ⟨⟩
 ---
 
 (module
-  (declaration (example (identifier) (anonymous_constructor (number) (number) (number))))
-  (declaration (example (identifier) (anonymous_constructor (number))))
-  (declaration (example (identifier) (anonymous_constructor))))
+  (declaration
+    (example
+      (identifier)
+      (anonymous_constructor
+        (number)
+        (number)
+        (number))))
+  (declaration
+    (example
+      (identifier)
+      (anonymous_constructor
+        (number))))
+  (declaration
+    (example
+      (identifier)
+      (anonymous_constructor))))
 
 =============================
 Invalid Inductive Constructor
@@ -239,9 +270,24 @@ example : Foo := ⟨, 2,⟩
 ---
 
 (module
-  (declaration (example (identifier) (anonymous_constructor (ERROR))))
-  (declaration (example (identifier) (anonymous_constructor (ERROR) (number))))
-  (declaration (example (identifier) (anonymous_constructor (ERROR) (number) (ERROR)))))
+  (declaration
+    (example
+      (identifier)
+      (anonymous_constructor
+        (ERROR))))
+  (declaration
+    (example
+      (identifier)
+      (anonymous_constructor
+        (ERROR)
+        (number))))
+  (declaration
+    (example
+      (identifier)
+      (anonymous_constructor
+        (ERROR)
+        (number)
+        (ERROR)))))
 
 ===========
 Identifiers
@@ -256,11 +302,16 @@ Identifiers
 ---
 
 (module
-  (hash_command (identifier))
-  (hash_command (identifier))
-  (hash_command (identifier))
-  (hash_command (identifier))
-  (hash_command (identifier)))
+  (hash_command
+    (identifier))
+  (hash_command
+    (identifier))
+  (hash_command
+    (identifier))
+  (hash_command
+    (identifier))
+  (hash_command
+    (identifier)))
 
 ===============
 Non-Identifiers
@@ -274,10 +325,19 @@ Non-Identifiers
 ---
 
 (module
-  (hash_command (ERROR (UNEXPECTED 8321)) (identifier))
-  (hash_command (char (MISSING "'")))
-  (hash_command (unary_expression (identifier)))
-  (hash_command (identifier)) (ERROR))
+  (hash_command
+    (ERROR
+      (UNEXPECTED 8321))
+    (identifier))
+  (hash_command
+    (char
+      (MISSING "'")))
+  (hash_command
+    (unary_expression
+      (identifier)))
+  (hash_command
+    (identifier))
+  (ERROR))
 
 =======
 Product
@@ -289,7 +349,12 @@ Product
 
 (module
   (hash_command
-    (parenthesized (number) (tuple_tail (string) (number) (number)))))
+    (parenthesized
+      (number)
+      (tuple_tail
+        (string)
+        (number)
+        (number)))))
 
 =============
 Function Type
@@ -301,8 +366,16 @@ Function Type
 ---
 
 (module
-  (hash_command (arrow (identifier) (identifier)))
-  (hash_command (arrow (identifier) (arrow (identifier) (identifier)))))
+  (hash_command
+    (arrow
+      (identifier)
+      (identifier)))
+  (hash_command
+    (arrow
+      (identifier)
+      (arrow
+        (identifier)
+        (identifier)))))
 
 ============
 Product Type
@@ -315,11 +388,23 @@ Product Type
 ---
 
 (module
-  (hash_command (product (identifier) (identifier)))
-  (hash_command (product (identifier) (product (identifier) (identifier))))
   (hash_command
     (product
-      (parenthesized (product (identifier) (identifier))) (identifier))))
+      (identifier)
+      (identifier)))
+  (hash_command
+    (product
+      (identifier)
+      (product
+        (identifier)
+        (identifier))))
+  (hash_command
+    (product
+      (parenthesized
+        (product
+          (identifier)
+          (identifier)))
+      (identifier))))
 
 =======================
 Product Type Precedence
@@ -329,10 +414,13 @@ Product Type Precedence
 
 ---
 
-; FIXME: This is wrong (backwards)... but apply's precedence needs fixing
-
 (module
-  (hash_command (apply (identifier) (product (number) (identifier)))))
+  (hash_command
+    (apply
+      (identifier)
+      (product
+        (number)
+        (identifier)))))
 
 ============
 If/Then/Else
@@ -342,7 +430,12 @@ If/Then/Else
 
 ---
 
-(module (hash_command (if_then_else (true) (string) (string))))
+(module
+  (hash_command
+    (if_then_else
+      (true)
+      (string)
+      (string))))
 
 =============
 If Needs Else
@@ -352,7 +445,10 @@ If Needs Else
 
 ---
 
-(module (ERROR (true) (string)))
+(module
+  (ERROR
+    (true)
+    (string)))
 
 ===================
 Nested If/Then/Else
@@ -364,8 +460,12 @@ Nested If/Then/Else
 
 (module
   (hash_command
-    (if_then_else (true)
-      (if_then_else (false) (string) (string))
+    (if_then_else
+      (true)
+      (if_then_else
+        (false)
+        (string)
+        (string))
       (string))))
 
 ==========
@@ -383,18 +483,36 @@ Nested If/Then/Else
 ---
 
 (module
-  (hash_command (neg (number)))
-  (hash_command (neg (float)))
-  (hash_command (neg (identifier)))
-  (hash_command (neg (neg (number))))
-  (hash_command (neg (neg (identifier))))
   (hash_command
     (neg
-      (parenthesized (binary_expression (number) (number)))))
+      (number)))
+  (hash_command
+    (neg
+      (float)))
+  (hash_command
+    (neg
+      (identifier)))
   (hash_command
     (neg
       (neg
-        (parenthesized (binary_expression (number) (number)))))))
+        (number))))
+  (hash_command
+    (neg
+      (neg
+        (identifier))))
+  (hash_command
+    (neg
+      (parenthesized
+        (binary_expression
+          (number)
+          (number)))))
+  (hash_command
+    (neg
+      (neg
+        (parenthesized
+          (binary_expression
+            (number)
+            (number)))))))
 
 =======================
 - Negation But Comments
@@ -405,7 +523,10 @@ Nested If/Then/Else
 
 ---
 
-(module (ERROR (comment) (comment)))
+(module
+  (ERROR
+    (comment)
+    (comment)))
 
 ==========
 ! Negation
@@ -418,10 +539,17 @@ Nested If/Then/Else
 ---
 
 (module
-  (hash_command (unary_expression (true)))
   (hash_command
-    (unary_expression (unary_expression (unary_expression (true)))))
-  (hash_command (unary_expression (identifier))))
+    (unary_expression
+      (true)))
+  (hash_command
+    (unary_expression
+      (unary_expression
+        (unary_expression
+          (true)))))
+  (hash_command
+    (unary_expression
+      (identifier))))
 
 ==========
 ¬ Negation
@@ -434,10 +562,17 @@ Nested If/Then/Else
 ---
 
 (module
-  (hash_command (unary_expression (true)))
   (hash_command
-    (unary_expression (unary_expression (unary_expression (true)))))
-  (hash_command (unary_expression (identifier))))
+    (unary_expression
+      (true)))
+  (hash_command
+    (unary_expression
+      (unary_expression
+        (unary_expression
+          (true)))))
+  (hash_command
+    (unary_expression
+      (identifier))))
 
 ==================
 Binary Expressions
@@ -466,43 +601,110 @@ Binary Expressions
 #check f ∘ g ∘ h
 
 ---
+
 (module
-  (hash_command (binary_expression (number) (number)))
-  (hash_command (binary_expression (number) (number)))
-  (hash_command (binary_expression (number) (number)))
-  (hash_command (binary_expression (number) (number)))
-  (hash_command (binary_expression (number) (number)))
-  (hash_command (binary_expression (number) (number)))
-  (hash_command (binary_expression (number) (number)))
-  (hash_command (binary_expression (number) (number)))
-  (hash_command (binary_expression (true) (true)))
-  (hash_command (binary_expression (true) (true)))
-  (hash_command (binary_expression (true) (true)))
-  (hash_command (binary_expression (true) (true)))
-  (hash_command (binary_expression (true) (true)))
-  (hash_command (binary_expression (string) (string)))
-  (hash_command (binary_expression (list) (list (list (string)))))
   (hash_command
     (binary_expression
-      (binary_expression (number) (identifier))
+      (number)
+      (number)))
+  (hash_command
+    (binary_expression
+      (number)
+      (number)))
+  (hash_command
+    (binary_expression
+      (number)
+      (number)))
+  (hash_command
+    (binary_expression
+      (number)
+      (number)))
+  (hash_command
+    (binary_expression
+      (number)
+      (number)))
+  (hash_command
+    (binary_expression
+      (number)
+      (number)))
+  (hash_command
+    (binary_expression
+      (number)
+      (number)))
+  (hash_command
+    (binary_expression
+      (number)
+      (number)))
+  (hash_command
+    (binary_expression
+      (true)
+      (true)))
+  (hash_command
+    (binary_expression
+      (true)
+      (true)))
+  (hash_command
+    (binary_expression
+      (true)
+      (true)))
+  (hash_command
+    (binary_expression
+      (true)
+      (true)))
+  (hash_command
+    (binary_expression
+      (true)
+      (true)))
+  (hash_command
+    (binary_expression
+      (string)
+      (string)))
+  (hash_command
+    (binary_expression
+      (list)
+      (list
+        (list
+          (string)))))
+  (hash_command
+    (binary_expression
+      (binary_expression
+        (number)
+        (identifier))
       (identifier)))
   (hash_command
     (binary_expression
-      (binary_expression (identifier) (apply (identifier) (identifier)))
-      (apply (identifier) (number))))
+      (binary_expression
+        (identifier)
+        (apply
+          (identifier)
+          (identifier)))
+      (apply
+        (identifier)
+        (number))))
   (hash_command
     (binary_expression
       (identifier)
-      (binary_expression (identifier) (number))))
-  (hash_command (binary_expression (identifier) (identifier)))
-  (hash_command
-    (binary_expression
-      (binary_expression (char) (char))
-      (binary_expression (char) (char))))
+      (binary_expression
+        (identifier)
+        (number))))
   (hash_command
     (binary_expression
       (identifier)
-      (binary_expression (identifier) (identifier)))))
+      (identifier)))
+  (hash_command
+    (binary_expression
+      (binary_expression
+        (char)
+        (char))
+      (binary_expression
+        (char)
+        (char))))
+  (hash_command
+    (binary_expression
+      (identifier)
+      (binary_expression
+        (identifier)
+        (identifier)))))
 
 ==========
 Precedence
@@ -527,58 +729,101 @@ example : 4 = 4 % 5 := rfl
 
 (module
   (hash_command
-    (binary_expression (number) (binary_expression (number) (number))))
+    (binary_expression
+      (number)
+      (binary_expression
+        (number)
+        (number))))
   (hash_command
-    (binary_expression (number) (binary_expression (number) (number))))
+    (binary_expression
+      (number)
+      (binary_expression
+        (number)
+        (number))))
   (hash_command
-    (binary_expression (number) (binary_expression (number) (number))))
+    (binary_expression
+      (number)
+      (binary_expression
+        (number)
+        (number))))
   (hash_command
-    (binary_expression (number) (binary_expression (number) (number))))
+    (binary_expression
+      (number)
+      (binary_expression
+        (number)
+        (number))))
   (hash_command
-    (binary_expression (number) (binary_expression (number) (number))))
+    (binary_expression
+      (number)
+      (binary_expression
+        (number)
+        (number))))
   (declaration
     (example
-      type:
-        (binary_expression (number) (binary_expression (number) (number)))
-      body:
-        (identifier)))
+      type: (binary_expression
+        (number)
+        (binary_expression
+          (number)
+          (number)))
+      body: (identifier)))
   (declaration
     (example
-      type:
-        (binary_expression (number) (binary_expression (number) (number)))
-      body:
-        (identifier)))
+      type: (binary_expression
+        (number)
+        (binary_expression
+          (number)
+          (number)))
+      body: (identifier)))
   (declaration
     (example
-      type:
-        (binary_expression (number) (binary_expression (number) (number)))
-      body:
-        (identifier)))
+      type: (binary_expression
+        (number)
+        (binary_expression
+          (number)
+          (number)))
+      body: (identifier)))
   (declaration
     (example
-      type:
-        (binary_expression (number) (binary_expression (number) (number)))
-      body:
-        (identifier)))
+      type: (binary_expression
+        (number)
+        (binary_expression
+          (number)
+          (number)))
+      body: (identifier)))
   (declaration
     (example
-      type:
-        (binary_expression (number) (binary_expression (number) (number)))
-      body:
-        (identifier)))
-  (hash_command
-    (binary_expression (binary_expression (false) (false)) (true)))
-  (hash_command
-    (binary_expression (true) (binary_expression (false) (false))))
+      type: (binary_expression
+        (number)
+        (binary_expression
+          (number)
+          (number)))
+      body: (identifier)))
   (hash_command
     (binary_expression
       (binary_expression
-        (binary_expression (number) (number))
+        (false)
+        (false))
+      (true)))
+  (hash_command
+    (binary_expression
+      (true)
+      (binary_expression
+        (false)
+        (false))))
+  (hash_command
+    (binary_expression
+      (binary_expression
+        (binary_expression
+          (number)
+          (number))
         (number))
       (number)))
   (hash_command
     (binary_expression
-      (binary_expression (neg (float)) (number))
+      (binary_expression
+        (neg
+          (float))
+        (number))
       (number))))
 
 ==========
@@ -595,12 +840,30 @@ Comparison
 ---
 
 (module
-  (hash_command (comparison (number) (number)))
-  (hash_command (comparison (number) (number)))
-  (hash_command (comparison (number) (number)))
-  (hash_command (comparison (number) (number)))
-  (hash_command (comparison (number) (number)))
-  (hash_command (comparison (number) (number))))
+  (hash_command
+    (comparison
+      (number)
+      (number)))
+  (hash_command
+    (comparison
+      (number)
+      (number)))
+  (hash_command
+    (comparison
+      (number)
+      (number)))
+  (hash_command
+    (comparison
+      (number)
+      (number)))
+  (hash_command
+    (comparison
+      (number)
+      (number)))
+  (hash_command
+    (comparison
+      (number)
+      (number))))
 
 =====================
 Comparison Precedence
@@ -618,7 +881,9 @@ example : 2 ≥ id 3 = false := rfl
     (example
       (binary_expression
         (comparison
-          (apply (identifier) (number))
+          (apply
+            (identifier)
+            (number))
           (number))
         (true))
       (identifier)))
@@ -627,14 +892,18 @@ example : 2 ≥ id 3 = false := rfl
       (binary_expression
         (comparison
           (number)
-          (apply (identifier) (number)))
+          (apply
+            (identifier)
+            (number)))
         (false))
       (identifier)))
   (declaration
     (example
       (binary_expression
         (comparison
-          (apply (identifier) (number))
+          (apply
+            (identifier)
+            (number))
           (number))
         (true))
       (identifier)))
@@ -643,7 +912,9 @@ example : 2 ≥ id 3 = false := rfl
       (binary_expression
         (comparison
           (number)
-          (apply (identifier) (number)))
+          (apply
+            (identifier)
+            (number)))
         (false))
       (identifier))))
 
@@ -657,7 +928,11 @@ Multiple Function Arguments
 
 (module
   (hash_command
-    (apply (identifier) (number) (number) (number))))
+    (apply
+      (identifier)
+      (number)
+      (number)
+      (number))))
 
 ===============
 Named Arguments
@@ -669,7 +944,11 @@ Named Arguments
 
 (module
   (hash_command
-    (apply (identifier) (named_argument (identifier) (number)))))
+    (apply
+      (identifier)
+      (named_argument
+        (identifier)
+        (number)))))
 
 =====================
 Mixed Named Arguments
@@ -681,11 +960,16 @@ Mixed Named Arguments
 
 (module
   (hash_command
-    (apply (identifier)
-        (number)
-        (named_argument (identifier) (number))
-        (number)
-        (named_argument (identifier) (number)))))
+    (apply
+      (identifier)
+      (number)
+      (named_argument
+        (identifier)
+        (number))
+      (number)
+      (named_argument
+        (identifier)
+        (number)))))
 
 ============
 Field Access
@@ -697,7 +981,8 @@ Field Access
 ---
 
 (module
-  (hash_command (identifier))
+  (hash_command
+    (identifier))
   (hash_command
     (proj
       term: (identifier)
@@ -711,7 +996,9 @@ Nested Field Access
 
 ---
 
-(module (hash_command (identifier)))
+(module
+  (hash_command
+    (identifier)))
 
 =======================
 Expression Field Access
@@ -724,7 +1011,10 @@ Expression Field Access
 (module
   (hash_command
     (proj
-      (parenthesized (apply (identifier) (identifier)))
+      (parenthesized
+        (apply
+          (identifier)
+          (identifier)))
       (identifier))))
 
 =====
@@ -746,13 +1036,11 @@ def foo (d : Bar) : Baz :=
           name: (identifier)
           type: (identifier)))
       type: (identifier)
-      body:
-        (match
-          value: (identifier)
-          patterns:
-            (match_alt
-              lhs: (identifier)
-              (number))))))
+      body: (match
+        value: (identifier)
+        patterns: (match_alt
+          lhs: (identifier)
+          (number))))))
 
 ==============
 Match Multiple
@@ -774,17 +1062,15 @@ def foo (a b c : Nat) :=
           name: (identifier)
           name: (identifier)
           type: (identifier)))
-      body:
-        (match
-          value: (identifier)
-          value: (identifier)
-          value: (identifier)
-          patterns:
-            (match_alt
-              lhs: (hole)
-              lhs: (hole)
-              lhs: (hole)
-              (true))))))
+      body: (match
+        value: (identifier)
+        value: (identifier)
+        value: (identifier)
+        patterns: (match_alt
+          lhs: (hole)
+          lhs: (hole)
+          lhs: (hole)
+          (true))))))
 
 =========================
 Match Multiple With Apply
@@ -798,9 +1084,18 @@ Match Multiple With Apply
 
 (module
   (hash_command
-    (match (number)
-      (match_alt (number) (apply (identifier) (number)))
-      (match_alt (hole) (apply (identifier) (number))))))
+    (match
+      (number)
+      (match_alt
+        (number)
+        (apply
+          (identifier)
+          (number)))
+      (match_alt
+        (hole)
+        (apply
+          (identifier)
+          (number))))))
 
 ================
 Match Expression
@@ -814,14 +1109,12 @@ Match Expression
 (module
   (hash_command
     (match
-      value:
-        (apply
-          name: (identifier)
-          arguments: (number))
-      patterns:
-        (match_alt
-          lhs: (hole)
-          (true)))))
+      value: (apply
+        name: (identifier)
+        arguments: (number))
+      patterns: (match_alt
+        lhs: (hole)
+        (true)))))
 
 =============
 $ Application
@@ -835,19 +1128,37 @@ $ Application
 
 (module
   (hash_command
-    (apply (identifier) (identifier)
+    (apply
+      (identifier)
+      (identifier)
       (parenthesized
-        (apply (identifier)
-          (parenthesized (binary_expression (number) (number)))))))
+        (apply
+          (identifier)
+          (parenthesized
+            (binary_expression
+              (number)
+              (number)))))))
   (hash_command
     (apply
-      (apply (identifier) (identifier))
-        (apply (identifier)
-          (parenthesized (binary_expression (number) (number))))))
+      (apply
+        (identifier)
+        (identifier))
+      (apply
+        (identifier)
+        (parenthesized
+          (binary_expression
+            (number)
+            (number))))))
   (hash_command
     (apply
-      (apply (identifier) (identifier))
-        (apply (identifier) (binary_expression (number) (number))))))
+      (apply
+        (identifier)
+        (identifier))
+      (apply
+        (identifier)
+        (binary_expression
+          (number)
+          (number))))))
 
 ==================
 Anonymous Function
@@ -860,8 +1171,11 @@ Anonymous Function
 (module
   (hash_command
     (fun
-      (parameters (identifier))
-      (binary_expression (identifier) (number)))))
+      (parameters
+        (identifier))
+      (binary_expression
+        (identifier)
+        (number)))))
 
 =============================
 Anonymous Function via Lambda
@@ -873,7 +1187,10 @@ Anonymous Function via Lambda
 
 (module
   (hash_command
-    (fun (parameters (identifier)) (identifier))))
+    (fun
+      (parameters
+        (identifier))
+      (identifier))))
 
 ==========================================
 Anonymous Function With Destructuring Bind
@@ -887,11 +1204,33 @@ Anonymous Function With Destructuring Bind
   (hash_command
     (fun
       (parameters
-        (anonymous_constructor (identifier))
+        (anonymous_constructor
+          (identifier))
         name: (identifier)
-        (anonymous_constructor (identifier) (identifier) (identifier))
+        (anonymous_constructor
+          (identifier)
+          (identifier)
+          (identifier))
         name: (identifier))
       (identifier))))
+
+========================================
+Anonymous Function With Tuple Pattern
+========================================
+
+#check (fun (k, v) => k)
+
+---
+
+(module
+  (hash_command
+    (parenthesized
+      (fun
+        (parameters
+          (explicit_binder
+            name: (identifier)
+            name: (identifier)))
+        (identifier)))))
 
 ==============================
 Anonymous Function Application
@@ -906,8 +1245,11 @@ Anonymous Function Application
     (apply
       (parenthesized
         (fun
-          (parameters (identifier))
-          (binary_expression (identifier) (number))))
+          (parameters
+            (identifier))
+          (binary_expression
+            (identifier)
+            (number))))
       (number))))
 
 =================================================
@@ -926,14 +1268,12 @@ Anonymous Function Match With Additional Argument
     (apply
       name: (identifier)
       arguments: (number)
-      arguments:
-        (fun
-          lhs: (number)
-          (number)
-          lhs: (identifier)
-          (number))
-      arguments:
-        (number))))
+      arguments: (fun
+        lhs: (number)
+        (number)
+        lhs: (identifier)
+        (number))
+      arguments: (number))))
 
 ==========================
 Sugared Anonymous Function
@@ -947,13 +1287,23 @@ Sugared Anonymous Function
 
 (module
   (hash_command
-    (parenthesized (binary_expression (cdot) (number))))
+    (parenthesized
+      (binary_expression
+        (cdot)
+        (number))))
   (hash_command
-    (parenthesized (binary_expression (cdot) (number))))
+    (parenthesized
+      (binary_expression
+        (cdot)
+        (number))))
   (hash_command
     (apply
       (identifier)
-      (parenthesized (binary_expression (cdot) (number))) (number))))
+      (parenthesized
+        (binary_expression
+          (cdot)
+          (number)))
+      (number))))
 
 =================
 Explicit Function
@@ -967,10 +1317,23 @@ Explicit Function
 ---
 
 (module
-  (hash_command (explicit (identifier)))
-  (hash_command (apply (explicit (identifier)) (identifier)))
-  (hash_command (apply (explicit (identifier)) (identifier) (true)))
-  (hash_command (explicit (identifier))))
+  (hash_command
+    (explicit
+      (identifier)))
+  (hash_command
+    (apply
+      (explicit
+        (identifier))
+      (identifier)))
+  (hash_command
+    (apply
+      (explicit
+        (identifier))
+      (identifier)
+      (true)))
+  (hash_command
+    (explicit
+      (identifier))))
 
 ===============
 Type Ascription
@@ -1001,10 +1364,9 @@ Type Ascription
         name: (identifier)
         arguments: (identifier))
       (type_ascription
-        type:
-          (apply
-            name: (identifier)
-            arguments: (identifier))))))
+        type: (apply
+          name: (identifier)
+          arguments: (identifier))))))
 
 =================================
 Application Across Multiple Lines
@@ -1045,12 +1407,11 @@ Structure Literal
       name: (identifier)
       value: (number)
       name: (identifier)
-      value:
-        (parenthesized
-          (fun
-            (parameters
-              name: (identifier))
-            (identifier))))))
+      value: (parenthesized
+        (fun
+          (parameters
+            name: (identifier))
+          (identifier))))))
 
 =======================
 Typed Structure Literal
@@ -1073,16 +1434,14 @@ Typed Structure Literal
       name: (identifier)
       value: (number)
       name: (identifier)
-      value:
-        (parenthesized
-          (fun
-            (parameters
-              name: (identifier))
-            (identifier)))
-      type:
-        (apply
-          name: (identifier)
-          arguments: (identifier))))
+      value: (parenthesized
+        (fun
+          (parameters
+            name: (identifier))
+          (identifier)))
+      type: (apply
+        name: (identifier)
+        arguments: (identifier))))
   (hash_command
     (structure_instance
       type: (identifier))))
@@ -1110,21 +1469,19 @@ Structure Overriding
       name: (identifier)
       value: (number)
       name: (identifier)
-      value:
-        (parenthesized
-          (fun
-            (parameters
-              name: (identifier))
-            (identifier)))))
+      value: (parenthesized
+        (fun
+          (parameters
+            name: (identifier))
+          (identifier)))))
   (hash_command
     (structure_instance
       extends: (identifier)))
   (hash_command
     (structure_instance
-      extends:
-        (apply
-          name: (identifier)
-          arguments: (number))
+      extends: (apply
+        name: (identifier)
+        arguments: (number))
       name: (identifier)
       value: (number))))
 
@@ -1138,8 +1495,13 @@ example : Foo := {x := 12, y := 13,}
 
 (module
   (declaration
-    (example (identifier)
-      (structure_instance (identifier) (number) (identifier) (number)))))
+    (example
+      (identifier)
+      (structure_instance
+        (identifier)
+        (number)
+        (identifier)
+        (number)))))
 
 =====================
 No Trailing Commas Aw
@@ -1156,22 +1518,54 @@ def foo | 0, => 2 | _, => 3
 
 (module
   (hash_command
-    (parenthesized (number) (tuple_tail (number) (number)) (ERROR)))
+    (parenthesized
+      (number)
+      (tuple_tail
+        (number)
+        (number))
+      (ERROR)))
   (hash_command
-    (list (number) (number) (number) (identifier (MISSING _identifier))))
+    (list
+      (number)
+      (number)
+      (number)
+      (identifier
+        (MISSING _identifier))))
   (hash_command
-    (array (number) (number) (number) (identifier (MISSING _identifier))))
+    (array
+      (number)
+      (number)
+      (number)
+      (identifier
+        (MISSING _identifier))))
   (declaration
-    (example (identifier)
+    (example
+      (identifier)
       (anonymous_constructor
-        (number) (number) (identifier (MISSING _identifier)))))
+        (number)
+        (number)
+        (identifier
+          (MISSING _identifier)))))
   (declaration
-    (attributes (identifier) (identifier) (identifier (MISSING _identifier)))
-    (def (identifier) (number)))
+    (attributes
+      (identifier)
+      (identifier)
+      (identifier
+        (MISSING _identifier)))
+    (def
+      (identifier)
+      (number)))
   (declaration
-    (def (identifier)
-      (match_alt (number) (ERROR) (number))
-      (match_alt (hole) (ERROR) (number)))))
+    (def
+      (identifier)
+      (match_alt
+        (number)
+        (ERROR)
+        (number))
+      (match_alt
+        (hole)
+        (ERROR)
+        (number)))))
 
 =====
 Sorry
@@ -1181,7 +1575,9 @@ Sorry
 
 ---
 
-(module (hash_command (sorry)))
+(module
+  (hash_command
+    (sorry)))
 
 ==================
 Escaped Identifier
@@ -1213,8 +1609,10 @@ Unless
 (module
   (hash_command
     (parenthesized
-      (unless (true)
-        (do (identifier)))
+      (unless
+        (true)
+        (do
+          (identifier)))
       (type_ascription
         type: (identifier)))))
 
@@ -1230,39 +1628,35 @@ Quantifiers
 (module
   (hash_command
     (forall
-      binders:
-        (binders
+      binders: (binders
+        name: (identifier))
+      body: (exists
+        binders: (binders
           name: (identifier))
-      body:
-        (exists
-          binders:
-            (binders
-              name: (identifier))
-          body:
-            (binary_expression
-              (binary_expression (identifier) (identifier))
-              (identifier)))))
+        body: (binary_expression
+          (binary_expression
+            (identifier)
+            (identifier))
+          (identifier)))))
   (hash_command
     (exists
-      binders:
-        (binders
-          (explicit_binder
-            name: (identifier)
-            name: (identifier)
-            type: (identifier)))
-      body:
-        (forall
-          binders:
-            (binders
-              name: (identifier))
-          body:
+      binders: (binders
+        (explicit_binder
+          name: (identifier)
+          name: (identifier)
+          type: (identifier)))
+      body: (forall
+        binders: (binders
+          name: (identifier))
+        body: (binary_expression
+          (binary_expression
             (binary_expression
               (binary_expression
-                (binary_expression
-                  (binary_expression (identifier) (identifier))
-                  (identifier))
+                (identifier)
                 (identifier))
-              (identifier))))))
+              (identifier))
+            (identifier))
+          (identifier))))))
 
 ========
 Borrowed
@@ -1272,7 +1666,10 @@ Borrowed
 
 ---
 
-(module (hash_command (borrowed (identifier))))
+(module
+  (hash_command
+    (borrowed
+      (identifier))))
 
 ===========
 Quoted Name
@@ -1282,7 +1679,10 @@ Quoted Name
 
 ---
 
-(module (hash_command (quoted_name (identifier))))
+(module
+  (hash_command
+    (quoted_name
+      (identifier))))
 
 ==================
 Double Quoted Name
@@ -1292,7 +1692,10 @@ Double Quoted Name
 
 ---
 
-(module (hash_command (double_quoted_name (identifier))))
+(module
+  (hash_command
+    (double_quoted_name
+      (identifier))))
 
 ===========
 Lift Method
@@ -1302,10 +1705,10 @@ Lift Method
 
 ---
 
-; This will runtime error (must be nested inside a 'do' expression),
-; but is valid syntax
-
-(module (hash_command (lift_method (identifier))))
+(module
+  (hash_command
+    (lift_method
+      (identifier))))
 
 =======
 Subtype
@@ -1317,7 +1720,11 @@ Subtype
 
 (module
   (hash_command
-    (subtype (identifier) (comparison (identifier) (number)))))
+    (subtype
+      (identifier)
+      (comparison
+        (identifier)
+        (number)))))
 
 =================
 Ellipsis Argument
@@ -1328,4 +1735,7 @@ Ellipsis Argument
 ---
 
 (module
-  (hash_command (apply (identifier) (ellipsis))))
+  (hash_command
+    (apply
+      (identifier)
+      (ellipsis))))
