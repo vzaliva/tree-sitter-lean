@@ -2,7 +2,9 @@
 .parse-dir-results
 .claude
 .cursor
-lean.so
-parser.so
+*.so
 corpus
-
+src/parser.c
+src/grammar.json
+src/node-types.json
+handover.md
