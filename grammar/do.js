@@ -110,7 +110,7 @@ module.exports = {
   rules: {
     _left_arrow: $ => choice('<-', '←'),
     do_return: $ => prec.left(PREC.lead,
-      seq('return', optional(field('value', $._expression))),
+      seq('return', field('value', prec(PREC.lead, $._expression))),
     ),
     do_match: $ => prec.left(seq(
       'match',
