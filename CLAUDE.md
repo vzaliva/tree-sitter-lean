@@ -19,6 +19,8 @@ tree-sitter parse path/to/file.lean
 ./scripts/parse-dir.sh -j 4 <directory>   # limit to 4 parallel jobs
 ```
 
+`tree-sitter` is installed as a system binary (available in `$PATH`). Always invoke it directly (e.g., `tree-sitter generate`), never via `npx`, `npm run`, or any other npm-based method.
+
 `src/parser.c`, `src/grammar.json`, and `src/node-types.json` are generated files — always regenerate with `tree-sitter generate` after editing `grammar.js` or any `grammar/*.js` file.
 
 ## Architecture
