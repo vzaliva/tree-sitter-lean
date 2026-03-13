@@ -23,6 +23,8 @@ tree-sitter parse path/to/file.lean
 
 `src/parser.c`, `src/grammar.json`, and `src/node-types.json` are generated files — always regenerate with `tree-sitter generate` after editing `grammar.js` or any `grammar/*.js` file.
 
+**CLI tools**: You can use: fd (fdfind), ripgrep, jq, rename, shellcheck, sd, delta, gh, difft (difftastic), scc, yq, hyperfine, watchexec, comby, tree-sitter, ast-grep, dtrx; fzf, bat, just, entr, rga (ripgrep-all), parallel (gnu parallel). For Lean workflows: fzf+bat (file/symbol nav + preview), just (task runner), entr or watchexec (rebuild on change), rga (search PDFs/docs/specs), parallel (safe parallel checks across files).
+
 ## Architecture
 
 The grammar is split across several JavaScript modules that are merged into the top-level `grammar()` call in `grammar.js`:
