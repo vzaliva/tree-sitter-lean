@@ -38,6 +38,9 @@ module.exports = grammar({
     $._newline,
     $._indent,
     $._dedent,
+    $._do_open,       // push DO context, emitted when indent detected at do-block start
+    $._do_separator,  // emitted at colEq within DO context (replaces _newline for do blocks)
+    $._do_close,      // emitted when indent drops below DO context column (replaces _dedent)
   ],
 
   conflicts: $ => [
@@ -145,7 +148,7 @@ module.exports = grammar({
     )),
 
     _do_seq: $ => choice(
-      seq($._indent, sep1($._do_element, $._newline), $._dedent),
+      seq($._do_open, sep1($._do_element, $._do_separator), $._do_close),
       $._do_element,
     ),
     do: $ => prec.right(seq('do', $._do_seq)),
