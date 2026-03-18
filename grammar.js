@@ -180,26 +180,6 @@ module.exports = grammar({
 
     unless: $ => seq('unless', $._expression, $.do),
 
-    try: $ => prec.left(1, seq(
-      'try',
-      $._do_seq,
-      choice(
-        seq($.catch, optional($.finally)),
-        $.finally,
-    ))),
-
-    catch: $ => prec.left(seq(
-      'catch',
-      $._expression,
-      '=>',
-      $._do_seq,
-    )),
-
-    finally: $ => prec.left(seq(
-      'finally',
-      $._do_seq,
-    )),
-
     fun: $ => prec.right(seq(
       choice('fun', 'λ'),
       choice(
