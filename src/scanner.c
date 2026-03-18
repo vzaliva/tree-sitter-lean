@@ -156,11 +156,9 @@ static bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symbols) {
       lexer->result_symbol = INDENT;
       return true;
     }
-    // Indent increased but not expected — emit separator as fallback.
-    if (ctx == CONTEXT_DO && valid_symbols[DO_SEPARATOR] && lexer->lookahead != '|') {
-      lexer->result_symbol = DO_SEPARATOR;
-      return true;
-    }
+    // Indent increased but neither DO_OPEN nor INDENT expected.
+    // Do NOT emit DO_SEPARATOR here — increased indent means continuation,
+    // not a new do-element boundary (DO_SEPARATOR is for colEq only).
     if (valid_symbols[NEWLINE] && lexer->lookahead != '|') {
       lexer->result_symbol = NEWLINE;
       return true;
