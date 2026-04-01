@@ -34,7 +34,7 @@ module.exports = {
   macro_rules: $ => seq(
     optional($._attr_kind),
     'macro_rules',
-    $._match_alts,
+    $._equation_alts,
   ),
   syntax: $ => seq(
     optional($._attr_kind),

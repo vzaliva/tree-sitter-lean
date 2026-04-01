@@ -118,16 +118,26 @@ module.exports = grammar({
       $.unless,
     ),
 
-    // let rec with equations: let rec f : Type | pat => body | pat => body
+    // let rec with either := body or equation clauses
     let_rec: $ => prec.left(1, seq(
       'let',
       'rec',
       field('name', $.identifier),
       optional(field('parameters', $.parameters)),
       optional(seq(':', field('type', $._expression))),
-      optional(choice($._newline, ';')),
-      field('value', $._match_alts),
-      optional(field('body', $._expression)),
+      choice(
+        seq(
+          ':=',
+          field('value', $._expression),
+          choice($._newline, ';'),
+          field('body', $._expression),
+        ),
+        seq(
+          optional(choice($._newline, ';')),
+          field('value', $._equation_alts),
+          field('body', $._expression),
+        ),
+      ),
     )),
 
     let: $ => prec.left(seq(

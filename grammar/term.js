@@ -155,6 +155,8 @@ module.exports = {
 
     match_alt: $ => match_alt($),
     _match_alts: $ => repeat1($.match_alt),
+    equation_alt: $ => match_alt($),
+    _equation_alts: $ => repeat1(alias($.equation_alt, $.match_alt)),
     _match_discr: $ => seq(
       optional(seq($.identifier, token.immediate(':'))),
       $._expression,
@@ -187,7 +189,7 @@ module.exports = {
     ),
     _let_id_decl: $ => prec.dynamic(1, seq($._let_id_lhs, ":=", field('body', $._expression))),
     _let_pattern_decl: $ => seq($._term, optional($._type_spec), ":=", $._expression),
-    _let_equations_decl: $ => seq($._let_id_lhs, field('body', $._match_alts)),
+    _let_equations_decl: $ => seq($._let_id_lhs, field('body', $._equation_alts)),
     _let_decl: $ => choice(
       $._let_id_decl, $._let_pattern_decl, $._let_equations_decl,
     ),
@@ -202,7 +204,7 @@ module.exports = {
       field('type', $._type_spec),
     ),
     _have_id_decl: $ => seq(optional($._have_id_lhs), ':=', $._term),
-    _have_eqns_decl: $ => seq(optional($._have_id_lhs), $._match_alts),
+    _have_eqns_decl: $ => seq(optional($._have_id_lhs), $._equation_alts),
     _have_decl: $ => choice(
       $._have_id_decl,
       $._let_pattern_decl,
@@ -220,7 +222,7 @@ module.exports = {
       seq('where', $._indent, sep1(alias($._let_rec_decl, $.where_decl), $._newline), $._dedent),
       seq('where', alias($._let_rec_decl, $.where_decl)),
     ),
-    _match_alts_where_decls: $ => seq($._match_alts, optional($._where_decls)),
+    _equation_alts_where_decls: $ => seq($._equation_alts, optional($._where_decls)),
 
     named_argument: $ => seq(
       '(', $.identifier, ':=', $._expression, ')',

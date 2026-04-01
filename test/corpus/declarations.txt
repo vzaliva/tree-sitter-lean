@@ -1470,6 +1470,32 @@ def foo :=
         value: (number)
         body: (identifier)))))
 
+===================
+Let Rec Simple Body
+===================
+
+def foo :=
+  let rec go (x : Nat) : Nat := x
+  go 2
+
+---
+
+(module
+  (declaration
+    (def
+      name: (identifier)
+      body: (let_rec
+        name: (identifier)
+        parameters: (parameters
+          (explicit_binder
+            name: (identifier)
+            type: (identifier)))
+        type: (identifier)
+        value: (identifier)
+        body: (apply
+          name: (identifier)
+          arguments: (number))))))
+
 ============
 Let Function
 ============

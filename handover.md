@@ -7,92 +7,140 @@ Improve parsing of real Lean 4 files in `corpus/*.lean`, prioritizing real-file 
 ## Current Branch State
 
 - Branch: `main`
-- 4 commits ahead of `origin/main` (`db3d46c`)
-- No uncommitted changes
+- Still `5` commits ahead of `origin/main` (`db3d46c`)
+- Working tree is dirty
+- Current uncommitted code changes include:
+  - `grammar.js`
+  - `grammar/term.js`
+  - `grammar/command.js`
+  - `grammar/syntax.js`
+  - `test/corpus/declarations.txt`
+- Docs also changed:
+  - `handover.md`
+  - `plan.md`
+  - `approach.md` is still untracked
 
-### Commits Made
+## What Landed In This Round
 
-1. `2634921` — Clean up dead code, remove orphan try/catch/finally, make do_return value optional
-2. `54bb3f2` — Context-aware layout scanner with DO_OPEN/DO_SEPARATOR/DO_CLOSE tokens
-3. `347570f` — Remove incorrect DO_SEPARATOR fallback on indent increase
-4. `ddc4ec1` — Remove unnecessary conflict declarations
+### 1. `let rec ... := ...` support
 
-## Architecture Changes
+`let_rec` in [grammar.js](/work/grammar.js) now accepts both:
 
-### Context-Aware Scanner (`src/scanner.c`)
+- simple body:
 
-The scanner now uses a **context-tagged indent stack**. Each entry tracks both column position and context type:
-
-```c
-typedef struct {
-    uint16_t column;
-    uint8_t context;  // CONTEXT_GENERIC or CONTEXT_DO
-} IndentEntry;
+```lean
+let rec f ... := expr
+body
 ```
 
-**New external tokens** (added to generic `_newline`/`_indent`/`_dedent`):
-- `_do_open` — pushes CONTEXT_DO when `valid_symbols[DO_OPEN]` is set (grammar requests it only in `_do_seq`)
-- `_do_separator` — emitted at same-column (colEq) in DO context
-- `_do_close` — emitted on dedent from DO context
+- equation body:
 
-**Key scanner behaviors**:
-- `|` suppression applies to both `_newline` AND `_do_separator` (needed for match arms inside do blocks)
-- DO_SEPARATOR is NOT emitted as fallback on indent increase (only at colEq)
-- Multi-level dedent pops one stack entry per scanner call (preserves context for correct token emission)
+```lean
+let rec f ...
+| pat => rhs
+body
+```
 
-### Grammar Changes (`grammar.js`, `grammar/do.js`)
+Important detail: both branches require the following `body` expression. Making the body optional caused a global top-level regression (`ERROR(module ...)`) and was reverted.
 
-- `_do_seq` now uses `seq($._do_open, sep1($._do_element, $._do_separator), $._do_close)` instead of `seq($._indent, sep1($._do_element, $._newline), $._dedent)`
-- `do_return` value is optional (bare `return` now works)
-- `_do_expression` alias removed; `_expression` used directly in `_do_element`
-- Dead code removed from `do.js` (100+ lines of unreachable old rules)
-- Orphan `try`/`catch`/`finally` rules removed from `grammar.js`
-- Several unnecessary conflict declarations removed
+### 2. Equation arms split away from pattern-match arms
+
+New internal category in [grammar/term.js](/work/grammar/term.js):
+
+- `equation_alt`
+- `_equation_alts`
+- `_equation_alts_where_decls`
+
+Wiring:
+
+- `match` and `do_match` still use `_match_alts`
+- `let_rec`, declaration equations, `let`/`have` equations, and `macro_rules` now use `_equation_alts`
+
+Visible tree shape is preserved by aliasing `equation_alt` back to `match_alt`, so existing tests did not need broad tree updates.
+
+### 3. Regression test added
+
+Added a new passing corpus test in [test/corpus/declarations.txt](/work/test/corpus/declarations.txt):
+
+- `Let Rec Simple Body`
 
 ## Current Results
 
-### Tests: 223 pass, 0 fail
+### Tests
+
+- `tree-sitter test`: `224` pass, `0` fail
 
 ### Corpus Status
 
-| File | Origin/main | Now | Delta |
-|------|-------------|-----|-------|
-| BigStep.lean | 8 | 6 | **-2** |
+| File | Previous | Now | Delta |
+|------|----------|-----|-------|
+| BigStep.lean | 6 | 6 | 0 |
 | Misc.lean | 0 | 0 | 0 |
-| Parser.lean | 53 | 55 | +2 |
+| Parser.lean | 55 | 55 | 0 |
 | Pretty.lean | 0 | 0 | 0 |
 | Runtime.lean | 0 | 0 | 0 |
-| Syntax.lean | 53 | **0** | **-53** |
-| Typecheck.lean | 121 | 119 | **-2** |
-| **Total** | **235** | **180** | **-55 (-23%)** |
+| Syntax.lean | 0 | 0 | 0 |
+| Typecheck.lean | 119 | 118 | **-1** |
+| **Total** | **180** | **179** | **-1** |
 
 ### File-Level Parse Pass/Fail
 
-- Passed: **4** (was 3) — Misc, Pretty, Runtime, **Syntax** (new)
-- Failed: 3 — BigStep, Parser, Typecheck
+- Passed: `4`
+  - `Misc.lean`
+  - `Pretty.lean`
+  - `Runtime.lean`
+  - `Syntax.lean`
+- Failed: `3`
+  - `BigStep.lean`
+  - `Parser.lean`
+  - `Typecheck.lean`
+
+### Generator Metrics
+
+Latest successful generate/build cycle after the new changes:
+
+- Generate time: about `1m37s`
+- Peak RSS: about `12.2 GB`
+- `src/parser.c`: `157630820` bytes
+
+State counts are still dominated by the usual broad expression rules:
+
+- `binary_expression`: `18641`
+- `comparison`: `16589`
+- `_dollar`: `16361`
+- `subarray`: `16224`
+- `let_rec`: `10263`
+
+The `_equation_alts` split did not create a new generator crisis by itself.
 
 ## Remaining Failure Modes
 
-### 1. `return .Ctor arg...` in match arms (BigStep.lean lines 49-60)
+### 1. `if ... then ...` without `else` in do blocks
+
+Example: [corpus/Parser.lean:86](/work/corpus/Parser.lean#L86)
+
+```lean
+if output.exitCode ≠ 0 then
+  throw <| IO.userError s!"Parsing failed: {output.stderr}"
+return output.stdout
+```
+
+This is still the highest-value remaining fix.
+
+### 2. `return .Ctor arg...` in match arms
+
+Example: [corpus/BigStep.lean:57](/work/corpus/BigStep.lean#L57)
 
 ```lean
 | Expr.num n =>
   return .success config (Value.num n)
 ```
 
-The parser greedily extends `return` past `.success` and consumes `config (Value.num n)` as application arguments. Needs match-arm-aware layout to bound the RHS.
+The parser still overextends the RHS and treats later material as application arguments.
 
-### 2. `if ... then ...` without `else` in do blocks
+### 3. Multiline `fun` with equation arms
 
-```lean
-if output.exitCode ≠ 0 then
-  throw <| IO.userError "fail"
--- no else branch
-```
-
-`if_then_else` requires `else`. Adding a separate `do_if` with optional else is **blocked by tree-sitter generator hang** on the conflict `[$._do_element, $.if_then_else]`. Making `else` optional globally causes regressions elsewhere.
-
-### 3. Multiline `fun` with equation arms (Parser.lean lines 557-561)
+Example: [corpus/Parser.lean:557](/work/corpus/Parser.lean#L557)
 
 ```lean
 let contents := pexprContents.filterMap fun
@@ -100,41 +148,104 @@ let contents := pexprContents.filterMap fun
   | _ => none
 ```
 
-Later `|` arms leak out of the fun expression. Needs fun-specific or match-specific layout tokens.
+Later `|` arms still leak out of the intended `fun`.
 
-## Experiments Tried and Results
+## Experiments In This Round
 
 ### Worked
 
-1. **Context-aware DO scanner** — Major win. Syntax.lean fully fixed.
-2. **Optional `do_return` value** — Fixed "Return Nothing" test.
-3. **Removing DO_SEPARATOR fallback on indent increase** — Fixed several BigStep/Typecheck regressions.
+1. **Simple-body `let rec`**:
+   - landed cleanly
+   - added one new passing regression test
+   - reduced `Typecheck.lean` by `1` error
 
-### Didn't Work
+2. **`_equation_alts` split**:
+   - landed cleanly
+   - no test regressions
+   - no corpus regressions
+   - removes one of the earlier blockers for future match-specific work
 
-1. **`do_if` as separate rule** — tree-sitter generator hangs on `[$._do_element, $.if_then_else]` conflict declaration. Appears to be a tree-sitter bug with certain conflict patterns.
-2. **Optional `else` in `if_then_else`** — Fixes target case but causes +14 net regression (dangling-else ambiguity in non-do contexts, state explosion 2m37s/17GB).
-3. **`_do_statement` category** — 4x state explosion (6m10s, 25.8 GB) from parallel choice set overlapping with `_expression`.
-4. **`_do_expr` with term.forbid** — Too complex, naming conflicts with existing `_do_term`.
+### Failed / Backed Out
 
-## Approach Documents
+1. **`do_if` via `_do_statement` + grammar refactor**
 
-- `/work/approach.md` — Root cause analysis and recommended approach
-- `/work/plan.md` — Implementation plan (Phase 0-4)
+I tried a narrower `do_if` shape plus a new `_do_statement` path. Generation initially produced local unresolved conflicts, but resolving them with additional conflicts pushed `tree-sitter generate` into the same low-CPU timeout/stall mode described in the older notes.
 
-## Suggestions For Next Work
+Outcome:
 
-1. **Match-specific layout tokens** (`_match_open`/`_match_separator`/`_match_close`): Would address failure modes 1 and 3. Requires restructuring `_match_alts` from `repeat1(match_alt)` to `seq(_match_open, sep1(match_alt, _match_separator), _match_close)`. The `|` suppression hack could then be replaced with context-aware logic.
+- the `do_if` attempt was fully backed out
+- current code does **not** contain `do_if`
 
-2. **`do_if` via scanner token**: Instead of a grammar-level `do_if` rule, emit a special scanner token (e.g., `_do_if_end`) when an `if ... then ...` block should terminate without `else` in DO context. This avoids the tree-sitter conflict entirely.
+2. **Optional `let_rec` body**
 
-3. **`by` tactic block tokens**: Add `_by_open`/`_by_separator`/`_by_close` similar to the DO tokens. `tactics` currently uses generic `_newline` separator.
+I initially allowed the new `:=` branch to omit the following body expression. That caused a broad parser regression where even simple files parsed as:
+
+```text
+(ERROR
+  (module ...))
+```
+
+Tightening both `let_rec` branches to require a following body fixed the issue.
+
+## What Changed About The Old Match-Token Blocker
+
+The previous handover said match-token work was blocked because `_match_alts` was reachable through declaration/equation contexts such as `let_rec`.
+
+That is now partly fixed:
+
+- `let_rec` no longer uses `_match_alts`
+- declaration equations no longer use `_match_alts`
+- `let`/`have` equations no longer use `_match_alts`
+- `macro_rules` no longer use `_match_alts`
+
+What is still unresolved:
+
+1. match-specific layout still needs a single-path grammar shape
+2. scanner handling must avoid reintroducing the old indent-stack interference
+3. `do_if` still blocks some of the same real-file cases upstream
+
+## Recommended Next Work
+
+### 1. Solve `do_if` via scanner-assisted boundary handling
+
+Do **not** revive the backed-out `_do_statement` + conflict approach.
+
+More promising direction:
+
+- keep expression-level `if_then_else` unchanged
+- use a DO-specific external token to mark the end of a `then` branch when the next same-column token is not `else`, or when the enclosing DO block closes past the branch
+
+### 2. Add passing `do_if` tests only when the implementation is stable
+
+Do not land red tests in the normal corpus.
+
+Add minimal passing tests for:
+
+- `if ... then ...` inside `do`
+- `if ... then ... else ...` inside `do`
+
+### 3. Revisit match-boundary work now that `_equation_alts` is in place
+
+Any next match experiment should target only:
+
+- `match`
+- `do_match`
+
+Avoid touching declaration/equation grammar in that experiment.
+
+### 4. Defer `_by_*` scanner tokens
+
+This is still lower priority than:
+
+- `do_if`
+- match-arm RHS boundaries
+- multiline `fun` equation handling
 
 ## Useful Commands
 
 ```bash
-# Generate with resource limits
-/usr/bin/time -v timeout 180s tree-sitter generate --report-states-for-rule -
+# Generate with realistic current limits
+/usr/bin/time -v timeout 180s prlimit --as=17179869184 -- tree-sitter generate --report-states-for-rule -
 
 # Build parser
 tree-sitter build
@@ -144,12 +255,12 @@ tree-sitter test
 
 # Count ERROR nodes per corpus file
 for f in corpus/*.lean; do
-  n=$(tree-sitter parse "$f" 2>/dev/null | rg -o 'ERROR \[' | wc -l)
-  printf '%s,%s\n' "$(basename "$f")" "$n"
+  n=$(tree-sitter parse "$f" 2>/dev/null | rg -c 'ERROR \[')
+  printf '%s,%s\n' "$(basename "$f")" "${n:-0}"
 done
 
 # File-level pass/fail
-./scripts/parse-dir.sh corpus
+./scripts/parse-dir.sh -j 4 corpus
 ```
 
 ## Existing Stashes
@@ -157,4 +268,4 @@ done
 - `stash@{0}`: `wip parser triage current diffs`
 - `stash@{1}`: `wip apply-head experiment`
 
-Do not pop them blindly; both contain reverted experiments from before this session.
+Do not pop them blindly.
